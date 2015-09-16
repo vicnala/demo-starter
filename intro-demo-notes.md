@@ -1,218 +1,284 @@
-# Meteor Intro Demo
+# Demo de la introducción a Meteor
 
 ##Preset
 
- * terminal on left, blank (tab for chat ready, blank - delete any old app)
- * blank tab for meteor create (delete old version)
- * tab on right in demo code directory - reset app and repo:
-    * `meteor reset`
-    * `git reset --hard HEAD`
-    * clear terminal (cmd-k)
- * underneath, have your text editor with the chat js & html files open in tabs.
- * browser on right at https://www.meteor.com/install
-    * 2nd tab empty but with console showing
+ * Navegador en https://www.meteor.com/install
+ * Terminal en /tmp
+ * rm -rf chat-app
 
 ##Demo
 
-### Install, create, run the app
-* The first thing we'll want to do is install Meteor, and there are instructions at meteor.com/install. This installs the meteor tool, which allows us to create, modify, and deploy meteor projects:
+### Instalar Meteor, crear la app y ejecutarlas
 
-	curl https://install.meteor.com/ | sh
+* Vamos a ver cómo instalar Meteor, las instrucciones para Linux, Mac y windows están en meteor.com/install. Se instala la herramienta Meteor y ya podemos crear y desplegar aplicaciones.
 
-* CTRL-C
+* Vamos a crear un proyecto llamado chat-app
 
-* Here we will create a project called demo, and Meteor will scaffold a simple app for us to start with.
-* You can see it gives us some basic files to work with:
+```
+meteor create chat-app
+cd chat-app
+ls
+```
 
-    meteor create demo
-    cd demo
-    ls
+* Vemos que se han creado cada uno de los 3 tipos de ficheros que usaremos.
+* La aplicación que se crea es muy básica. voy a *copiar el código* de la demo y continuamos.
+* *atom .*
+* Bien, ya está, ... *arrancamos* meteor
+* Y vamos a localhost:3000 en el *navegador*
 
-* I want to move to a more interesting app where I've changed those files (go to chat tab).
-* When I type meteor, it will start a development server for me
-* It will tell me to go to localhost:3000
+## HTML
 
-*terminal*
+* Aquí está nuestra app.
+* El *CSS* es algo de lo que no va esta presentación, así que, por ahora, lo dejamos como está.
+* Podéis ver cómo *el código html* se corresponde con lo que vemos en el navegador.
+* Vamos a añadirle un título a nuestra app
 
-    meteor
-
-* open in browser
-* Show text editor (replace terminal)
-
-##html
-
-* There's our site. You can see that the html on the left mirrors the app on the right.
-* We start with a header element. It's looking pretty empty. Let's add an h1
-
-    <h1>Chat App</h1>
-
+```
+<h1>Chat App</h1>
+```
 (save)
 
-* Now I'm hitting save. Meteor will detect the file change and rebuild the code and push it out to the client. This is called **hot code push**. It's very useful in development, but this works in production too, allowing you to roll out code updates to live users without interrupting their work.
-* (skip the middle)
-* Down here we find a form with an input where we'll add messages
-* Above that is this place where messages will go.
-    * We are using handlebars syntax
-    * We will iterate over all the messages using the `#each` helper, working on a list of recentMessages that will be provided by the javascript.
-    * This will be connected via the database.
+* Cuando le doy a guardar, Meteor detecta los cambios, reconstruye el código y lo envía al cliente. Lo llaman **hot code push** y es muy útil durante el desarrollo, pero, también en producción, porque nos permite enviar actualizaciones a los usuarios aunque estén usando la app, sin molestarles demasiado. (Según tengo entendido, a Apple no le gustaba esto de que las actualizaciones no pasaran por sus manos, pero ahora, ya no es un problema).
 
-## JS code
+* (*footer*) En la parte de abajo hay un formulario para añadir los mensajes.
 
-* `Meteor.isClient` / `Meteor.isServer` - code can run on the client, server, or both.
-*  You can also use folders called `client` or `server` to separate this code.
-* Let’s explore this code.
+* Y en el medio irán los mensajes:
+    * Aquí se usa la sintaxis para plantillas handlebars.
+    * Recorremos la lista de mensajes usando `#each`, lista, que nos pasa JavaScript, como veremos.
+    * Y todo estará conectado vía la base de datos.
+
+## JS
+
+* *Meteor.isClient* / *Meteor.isServer* - Lo primero que vamos a ver es que hay código para el cliente, para el servidor y para los dos (Podéis usar los directorios `client` y `server` para separar este código, lo veremos más adelante si queréis).
+
+* Vamos a echar un vistazo al código desde el principio. Hay trozos comentados que iremos destapando después.
 
     Messages = new Mongo.Collection('msgs');
 
-* This statement runs on both the client and server
-    * On the server, it creates a MongoDB collection on your production database
-    * On the client, it creates a Minimongo collection (subset of the server, synced by Meteor)
-    * Minimongo uses the same API as the production version of Mongo, so you can use the same commands on the client or the server
-* Here the server publishes a publication called ”messages":  
-    * This is like a REST endpoint, except it's live, meaning changes that affect the query will be pushed down to the client in realtime
-    * The query, written in standard MongoDB syntax, requests the five most recent messages (only 5 to keep the app simple)
-* The client subscribes to the ”messages" publication, so we’ll only have access to those five messages on the client regardless of how many there are on the server.
-* Next, here's the `recentMessages` helper we saw in the HTML. It will provide the list of messages to be rendered, and it will rerun if that data changes.
-    * Here too, we’re using standard MongoDB syntax - on the client, thanks to Minimongo.
-    * On the server, we used reverse chronological order to get the most recent messages, but here we'll re-order them into forward chronological order.
+* Esta línea se ejecuta tanto en el servidor como en el cliente.
+    * En el servidor, crea una colección en una base de datos MongoDB.
+    * Y en el cliente, crea una colección *Minimongo* (un subconjunto sincronizado de la del servidor)
+    * Minimongo es una implementación light de Mongo que usa la misma API que la versión del servidor y de esta forma se pueden usar las mismas funciones en los dos entornos.
 
-## Show full stack DB connectivity
-* So that actually gives us everything we need to add messages to the app.
-* I'm going to pull up this cheatsheet and copy a Mongo command to insert a message from the browser console.
+*body.helpers*
 
-*copy from the cheat sheet into the browser console*
+* En la parte del cliente encontramos la función que proporciona la lista de mensajes que hemos visto en el HTML. A estas funciones se les llama ayudantes y son *reactivas*, es decir, se ejecutan automáticamente cada vez que cambian los datos que maneja.
 
-* I can call Minimongo directly from the browser console...
-* And look, it's already in the DOM! What happened here?
-    * When inserted it in Minimongo, the change triggered a re-rendering of the DOM using Blaze, Meteor's view layer.
-    * This ability to rerun and re-render is called reactivity, and it's built into Meteor all the way to the server.
-    * The insert was also sent separately to the server, which will notify any clients subscribed to the messages publication.
-* We can also do this from the Mongo console. The meteor tool will help me open the console.
+    * *Template.body* es un objeto "Blaze" (la librería de Meteor para crear IU que renderiza las cosas en tiempo real) enganchado a la etiqueta *body*. Podemos crear nuestras propias plantillas además de usar alguna las etiquetas html.
+    * Como véis, en la consulta se usa la misma sintaxis de MongoDB en el cliente, gracias a Minimongo.
+    * Como veremos, obtendremos los mensages más recientes del servidor en orden cronológico inverso, pero aquí los reodenamos en orden cronológico.
+
+*body.events*
+
+* Por último tenemos la definición los eventos del objeto *Template.body* que queremos controlar, en este caso un *submit* en el formulario que, por ahora, sólo saca por la consola el texto que escribimos.
+
+
+## Demostrar la conectividad con la base de datos en toda la pila
+
+* Bien, pues, en realidad, ya lo tenemos casi todo ... Aún sin interfaz de usuario "funcional" (ya que el formulario no hace nada), sí que tenemos una app funcional.
+* ¿Funcional ...? Vamos a verlo
+* Aunque la interfaz de usuario no funcione, si que podemos usar Minimongo directamente desde la consola del navegador. Para para insertar un mensaje escribimos:
+
+```
+Messages.insert({username: 'consola', text: 'Hola desde la consola', createdAt: new Date()})
+```
+
+* Y mirar, está también en el DOM!, qué ha pasado aquí?
+    * Cuando llamamos a la función insert de Minimongo, el cambio dispara un redibujado del DOM por parte de Blaze. Esto que estamos viendo es lo que hemos llamamos *reactividad*.
+    * Además, ese insert se ha enviado de forma independiente al servidor que notificará, a su vez, a todos los clientes.
+
+* Podemos hacer lo mismo, directamente sobre nuestra base de datos.
 
 Go to *terminal*. new tab
 
-    meteor mongo
-    db.msgs.insert({text: 'hello from Mongo', createdAt: new Date, username: 'mongo console'})
+```
+meteor mongo
+db.msgs.insert({text: 'Hola desde Mongo', createdAt: new Date, username: 'mongo'})
+```
 
-* This insert is completely independent of Meteor, but Meteor saw it
-* Meteor sees anything added to Mongo. You can use this as an integration point for other apps that use Mongo.
-* This is done without polling. Instead Meteor watches MongoDB’s “operations log” or oplog.
+* Esto es una inserción en la BBDD completamente independiente y sin embargo, Meteor lo ha detectado. Esto es porque Meteor ve cualquier cosa que pasa en Mongo.
+*  Así que, esta es una forma de integrar otras aplicaciones..
+* Esto se hace si estar consultando constantemente (sin polling). En vez de eso, Meteor mira el "log de operaciones" de MongoDB’ o oplog.
 
-## DB connectivity in JS code
+*Seguridad en el cliente*
 
-* So let's look back at the javascript.
-* Here's the event code that handles the form submission. You can see it does a Mongo insert - in fact, it's the same thing we did in the console. That's all that you need.
+Antes de continuar vamos a detenernos en un aspecto de seguridad.
 
-*in app*
+* Poder llamar a la función insert desde la consola podría acarrear ciertos problemas ya que ese insert va directo a la base de datos, sin que se haga ninguna comprobación por parte del servidor. ¿Qué pasa si un usuario se dedica a rellenarnos la base de datos de mensajes?
 
-    hello from the app
+Por defecto, y para facilitar el desarrollo, los proyectos incluyen el paquete *insecure* que permite prototipar muy rápidamente sin tener que hacer consideraciones de seguridad como la validación de los datos, de usuarios, etc.
 
-* And that's all the code. But check this out, if I open another browser and point it to `localhost:3000`, it will also update.
+```
+meteor list
+meteor remove insecure
+```
 
-    hello again
+*Meteor methods*
 
-    (from other app)
-    hello from other app
+Ahora, ya no funcionan los inserts (repetir comando en el navegador) y tenemos que crear *un método*. Los métodos son funciones que se llaman desde el cliente pero cuyo resultado es validado por el servidor.
 
-* So in fact, we basically already have a working chat app!
+* *Descomentar Meteor.methods*, como vemos, los métodos se definen para los dos entornos y en este caso, lo que hace es insertar un mensaje en la base de datos. Bien, pues ahora, ya podemos usar el método:
 
-## Add accounts support
+```
+Meteor.call('sendMessage', 'hello from the browser console')
+```
 
-* But there's still one thing missing - all of these are being logged as anonymous. So let's add an account system.
-* I'm going to exit the mongo shell and use the Meteor tool to add some packages.
+* Y bien, ahora si, por último, sólo nos queda habilitar la funcionalidad que le corresponde al formulario.
+  * *Descomentar Meteor.call* y escribir un mensaje. *Por fin!*
+
+
+*Meteor.publish/Meteor.subscribe*
+
+Para continuar, necesitamos quitar el paquete autopublish, que, igual que insecure, y por las mismas razones, también viene por defecto. En este caso, lo que hace autopublish es eso, publicarlo todo, de forma que Minimongo es prácticamente Mongo.
+Pero ... imaginaros si a la gente le gusta mucho nuestra app y empezamos a mover miles de mensajes, pues ... esto sería un problema para los navegadores de nuestros usuarios. Mejor lo quitamos:
+
+```
+meteor remove autopublish
+```
+
+Vaya, pues si que funciona! Minimongo se ha quedado vacío.
+
+Para controlar los datos que se envían a los clientes, Meteor nos proporciona un sistema de Publicaciones/Subscripciones. Vamos a ver cómo funciona:
+
+*Descomentar Meteor.publish*
+
+    * Aquí, el servidor habilita una publicación llamada ”messages" (no confundir con la base de datos msgs), esto sería más bien como una colección "a la carta" de la colección Mongo:
+    * Sería algo así como un punto de acceso o end-point de un servicio REST, excepto que está vivo, es decir que los cambios que afecten a esa consulta, se enviarán a los clientes en tiempo real.
+    * La consulta se escribe como en Mongo y pide los últimos 5 mensajes (lo dejamos en 5 para hacerlo sencillo y no tener que paginar)
+
+*Descomentar Meteor.subscribe*
+
+    * Bien, pues entonces, el cliente sólo tiene que suscribirse a esa publicación y, por lo tanto, sólo tendrá acceso a esos 5 últimos mensajes, sin importar los que haya en el servidor. Uf!, pues, solucionado, ya gestionamos los mensajes que sean necesarios sin sobrecargar a los clientes.
+
+(save) Ah!, bien, esto está mejor!
+
+Pero, esperar que abra otro navegador ... (usar el modo privado para simular otro cliente) y enviar otro mensaje. "Hola, yo soy otro usuario"
+
+*Pues entonces ... ya tenemos una aplicación para chatear!*
+
+## Añadir cuentas de usuario
+
+* Pero, claro, aún falta una cosa - todos los mensajes son anónimos. Así que, vamos a añadir un sistema de cuentas usando el sistema de paquetes de Meteor.
 
 *terminal*
 
     meteor add accounts-ui accounts-password accounts-facebook
 
-* This gives us
-    * The meteor account system
-    * Standalone password-based authentication
-    * And oAuth-based authentication through Facebook
-* Meteor packages can add to the client and the server, so they can coordinate adding UI elements with the server elements that are needed to make them work. They can even manage their own state with their own database collections!
+* Esto nos proporciona
+    1. El sistema de cuentas de Meteor
+    2. Un método de autenticación basado en contraseña
+    3. Un método de autenticación basado oAuth a través de Facebook
+* Al igual que nuestro código, los paquetes pueden añadir cosas a cliente y servidor de manera que pueden coordinar los elementos que se añaden a la interfaz de usuario con los que tienen que manejarlos desde el servidor y pueden gestionar su propio funcionamiento usando sus propias colecciones en la base de datos.
 
-## Update app to use accounts
+## Actualizar la app para usar las cuentas
 
-* The first thing we'll need is some kind of widget to allow users to log in. The account system provides one, so I'm going to go back to the app and add it:
-
-*editor, html*
-Add
-
+* Bien, lo primero que tenemos que hacer es añadir el elemento que nos proporciona el sistema de cuentas para la IU y que debe permitir a los usuarios crear una cuenta, acceder, etc.
+```
     {{> loginButtons}}
-
+```
 (save)
 
-* Here it is! (leave it open)
-* You can see that we can set up Facebook login right here - so we added oAuth to our app in seconds - this process can take a solid week in many frameworks! All we have to do now is configure it, which is easy if you follow the instructions in this popup (click on “Configure Facebook login”). Rather than do that though, let’s see how password-based login works.
-* Here’s an email field. That's not ideal - we'd really rather have it use a username, so let me uncomment out this config code:
+* Bien, aquí lo tenemos.
+* Podéis ver que podemos configurar el acceso vía Facebook - de manera que hemos añadido oAuth a nuestra app en segundos - este proceso puede llevar semanas usando otros frameworks! Sólo queda configurarlo, que es muy fácil siguiendo las instrucciones que se muestran al pinchar en el botón. Pero ...
+* En vez de eso ... vamos a usar el acceso basado en password.
+* Aquí hay hay un campo de Email por lo que tendríamos que pasar por el proceso de confirmación ... vamos a hacerlo más sencillo.
 
-uncomment the `Accounts.config` code (hot code push changes email to username)
+*Descomentar `Accounts.config`* y ver cómo cambia Email por Username
 
-* Next we'll want to add the username when we insert new messages.
+* Y ademnás, queremos que, en vez de *anonymous*, se muestre nuestro nombre de usuario al escribir un mensaje:
 
-update "anonymous" to
+*Cambiar* "anonymous" por Meteor.user().username
 
-        Meteor.user().username
+* Y además, no queremos que usuarios sin autenticar, puedan intentar escribir mensajes.
 
-* And we want to prevent unauthenticated users from posting messages.
+*Descomentar `Accounts.config`*
 
-uncomment the "not authorized" code just above
-demonstration in the console (up arrow for the command) and in the app.
+Demostrar desde la consola el error que sale al llamar al método.
 
-* Finally, since unauthenticated users can't send messages, let's hide the input element if someone's not logged in.
+* Y para acabar, dado que no pueden enviar mensajes, vamos a esconder el formulario para los usuarios que no están autenticados.
 
 *html*
 surround <form> element:
-
+```
     {{#if currentUser}}
         (existing form)
     {{/if}}
+```
 
-* This is a handlebars `if` statement and will only render if `currentUser` is truthy. `currentUser` will return the user ID or a “falsy” value.
-* When we hit save, you'll see the input disappear.
-* So, that's all the functionality that we need.
+* Esto es un simple `if`. Sólo se muestra el formulario si `currentUser` es algo verdadero.
+* El ayudante `currentUser` devuelve el ID del usuario o si no, algo falso.
+* Hemos visto desaparecer el formulario porque aún no estamos autenticados
+* Y, ahora sí, esto es todo lo que necesitamos.
 
-## Demo working app
-(create accounts and show messages both ways - note reactive changes based on login status)
+## Demo de la app funcionando
+(crear 2 usuarios y enviar mensajes)
 
-## Deploy
+## Despliegue
 
-* This is a great app. I'd like to show it to friends, or maybe investors!
-
-*terminal*
-**REPLACE `appname` with a name you give**
-
-    meteor deploy appname
-
-(while it runs)
-
-* Meteor gives you a free server to demo your apps and share with others.
-* It will work great for small apps, and it's free forever.
-* Meteor will also have a pro version of deploy called Galaxy. This is how they will make money, but all this is doing is creating a node.js app. You can get that bundled app and run it on any server that supports node.js.
-* OK, it's done. If you go to this URL, you can give it try!
-
-(go there and leave it up so people can play)
-
-If you prefer to deploy your own code, you can ask the Meteor tool to bundle it up for you:
-
-    meteor bundle chat-app
-
-You can see that Meteor gives you instructions on how to use the tarball it creates.
-
-## Mobile
-* I wish I could sell this app on the App Store or Google Play:
+* Guay, esta app es genial, vamos a enseñársela a nuestros colegas o, puede que a nuestros inversores!. Para desplegar la app sólo necesitamos una cuenta de desarrollador de Meteor
+https://www.meteor.com/services/developer-accounts
 
 *terminal*
 
-    meteor list-platforms
-    meteor add-platform ios
+```
+meteor deploy elmejorchat1
+```
 
-* Now Meteor is using Cordova (PhoneGap)
-* There are cross--platform packages like `camera` that will allow you to use the phone's sensors.
-* We can run it in the iOS simulator by typing
+(mientras tanto ...)
 
-    meteor run ios
-      (or)
-    meteor run android
+* Meteor nos proporciona un servidor gratuito para poder enseñar y compartir nuestras aplicaciones.
+* Funcionará perfectamente para aplicaciones pequeñas y es *gratis para siempre*.
+* Ahora mismo en beta, tenemos Galaxy. La versión pro y con la que Meteor pretende ganar dinero.
+* Pero puedes ejecutar la app en cualquier sitio que soporte aplicaciones node.js.
+* Bien, pues ya tenemos desplegada nuestra app. Si vamos la URL podemos jugar un poco con ella!
 
-* Now you can deploy to the App Store or Play Store. I'm not going to wait for this to build - let's move on with the presentation.
+(dejar que la gente pruebe si quiere)
+
+1. Si preferís usar vuestro propio servidor yo os recomiendo "meteor up", un sistema de despliegue igual de sencillo que todo lo demás en Meteor.
+
+## Apps para móviles
+
+* ¿Y qué pasa si ahora queremos vender nuestra app en la App Store o en la Play Store?, pues nada, darme un minuto ...
+* Vamos a ver qué plataformas tenemos instalas ...
+
+```
+meteor list-platforms
+```
+* Vamos a añadir Android
+
+```
+meteor add-platform android
+meteor run android --mobile-server elmejorchat1.meteor.com
+```
+
+* Ahora, Meteor está usando Cordova (o sea PhoneGap)
+1. * Podéis usar lo que queráis, cámara, sensores, Bluetooth, con tan solo añadir el paquete Cordova correspondiente.
+* Vamos a ver cómo va la app en el simulador
+* Y listo para la Play Store.
+
+
+Bien, *volvamos a la presentación par recopilar todos los conceptos que hemos visto en el código*
+
+
+## Bootstrap
+
+```
+meteor add twbs:bootstrap
+```
+
+*html*
+```
+<div class="username"> <span class="label label-info">{{username}}</span> </div>
+```
+
+## Estructura de la app
+
+```
+mkdir client
+touch client/main.js
+touch client/main.html
+mkdir server
+touch server/publications.js
+mkdir -p lib/collections
+touch lib/
+```
