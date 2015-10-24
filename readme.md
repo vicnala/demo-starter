@@ -1,12 +1,12 @@
 # Introducción a Meteor: Demo
 
-Esto es la traducción, con algunos cambios, de la demo incluida en el [Meteor speaker kit](http://speakerkit.meteor.com/). Es una app "completa" diseñada para que lleve unos 15 minutos construirla.
+Esto es la traducción (con algunos cambios), de la demo incluida en el [Meteor speaker kit](http://speakerkit.meteor.com/). Es una app "completa" diseñada para que lleve unos 15 minutos construirla.
 
 ## Materiales de soporte
 
 * En las [notas](intro-demo-notes.md) se describe cómo preparar, avanzar en el código paso a paso, y las características que puedes resaltar.
-* Eliminado el [copy/paste original](https://github.com/meteor/demo-starter/blob/master/demo-copy-paste.md) y lo he incluido todo en las [notas](intro-demo-notes.md).
-* el directorio chat-app contiene el código con trozos comentados que hay que añadir durante el desarrollo de la demo.
+* He eliminado el [copy/paste original](https://github.com/meteor/demo-starter/blob/master/demo-copy-paste.md) y lo he incluido todo en las [notas](intro-demo-notes.md).
+* El directorio chat-app contiene el código con trozos comentados que hay que añadir durante el desarrollo de la demo.
 * Hay un [video en inglés de esta demo](https://youtu.be/dOCMpoeuwTI?t=3m44s) que puedes usar como referencia.
 
 ## Cómo practicar la demo
