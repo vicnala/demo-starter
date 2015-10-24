@@ -3,18 +3,16 @@ Messages = new Mongo.Collection("msgs");
 if (Meteor.isServer) {
   // This code only runs on the server
   console.log("I'm the server");
-  /*
-  Meteor.publish("messages", function () {
-    return Messages.find({}, {sort: {createdAt: -1}, limit: 5});
-  });
-  */
+
+  // Meteor.publish("messages", function () {
+  //   return Messages.find({}, {sort: {createdAt: -1}, limit: 5});
+  // });
 }
 
 if (Meteor.isClient) {
   // This code only runs on the client
-  /*
-  Meteor.subscribe("messages");
-  */
+  //Meteor.subscribe("messages");
+
   console.log("I'm the client");
 
   Template.body.helpers({
